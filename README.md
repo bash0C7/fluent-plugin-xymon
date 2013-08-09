@@ -4,13 +4,9 @@ Fluentd output plugin to post message to xymon
 
 ## Installation
 
-Build gem to 'pkg/fluent-plugin-xymon-<VERSION>.gem'
-
-    bundle exec rake build
-
 Install gem
 
-    fluent-gem install --local  pkg/fluent-plugin-xymon-<version>.gem
+    fluent-gem install fluent-plugin-xymon
 
 ## config
 
