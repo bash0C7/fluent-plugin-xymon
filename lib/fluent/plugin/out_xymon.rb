@@ -13,9 +13,13 @@ module Fluent
     config_param :hostname, :string
     config_param :testname, :string
     config_param :name_key, :string
+    config_param :custom_determine_color_code, :string, :default => nil
 
     def configure(conf)
       super
+
+      @custom_determine_color = nil
+      @custom_determine_color = lambda {|time, record, value| eval(@custom_determine_color_code)} if @custom_determine_color_code
     end
 
     def start
@@ -31,7 +35,7 @@ module Fluent
       es.each {|time,record|
         next unless value = record[@name_key]
 
-        messages.push build_message(time, value)
+        messages.push build_message(time, record, value)
       }
       messages.each do |message|
         post(message)
@@ -40,9 +44,16 @@ module Fluent
       chain.next
     end
 
-    def build_message time, value
+    def build_message time, record, value
+      begin
+        color = @custom_determine_color.call(time, record, value) if @custom_determine_color
+      rescue Exception
+        $log.warn "raises exception: #{$!.class}, '#{$!.message}', '#{@custom_determine_color_code}', '#{time}', '#{record}', '#{value}'"
+      end
+      
+      color ||= @color
       body = "#{@name_key}=#{value}"
-      message = "status #{@hostname}.#{@testname} #{@color} #{Time.at(time)} #{@testname} #{body}\n\n#{body}"
+      message = "status #{@hostname}.#{@testname} #{color} #{Time.at(time)} #{@testname} #{body}\n\n#{body}"
 
       message
     end
