@@ -69,20 +69,5 @@ describe do
       subject {posted}
       it{should_not be_nil}
     end
-
-    #    context do
-    #      subject {posted[:data][:message]}
-    #      it{should =~ "status #{driver.instance.host}.#{driver.instance.column} #{driver.instance.color} [^\n]+\n\n#{driver.instance.name_key}=50"}
-    #    end
-    #
-    #    context do
-    #      subject {posted[:data][:xymon_server]}
-    #      it{should == driver.instance.xymon_server}
-    #    end
-    #
-    #    context do
-    #      subject {posted[:data][:xymon_port]}
-    #      it{should == driver.instance.xymon_port}
-    #    end
   end
 end
