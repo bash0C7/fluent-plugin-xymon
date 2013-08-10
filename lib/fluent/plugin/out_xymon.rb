@@ -10,8 +10,8 @@ module Fluent
     config_param :xymon_server, :string
     config_param :xymon_port, :string, :default => '1984'
     config_param :color, :string, :default => 'green'
-    config_param :host, :string
-    config_param :column, :string
+    config_param :hostname, :string
+    config_param :testname, :string
     config_param :name_key, :string
 
     def configure(conf)
@@ -42,7 +42,7 @@ module Fluent
 
     def build_message time, value
       body = "#{@name_key}=#{value}"
-      message = "status #{@host}.#{@column} #{@color} #{Time.at(time)} #{@column} #{body}\n\n#{body}"
+      message = "status #{@hostname}.#{@testname} #{@color} #{Time.at(time)} #{@testname} #{body}\n\n#{body}"
 
       message
     end

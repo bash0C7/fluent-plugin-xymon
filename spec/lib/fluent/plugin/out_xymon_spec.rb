@@ -5,9 +5,9 @@ describe do
     %[
       xymon_server 127.0.0.1
       xymon_port   1984
-      color         red
-      host         host1
-      column       column1
+      color        red
+      hostname     host1
+      testname     column1
       name_key     field1
     ]
   }
@@ -33,12 +33,12 @@ describe do
     end
 
     context do
-      subject {driver.instance.host}
+      subject {driver.instance.hostname}
       it{should == 'host1'}
     end
 
     context do
-      subject {driver.instance.column}
+      subject {driver.instance.testname}
       it{should == 'column1'}
     end
 
@@ -52,7 +52,7 @@ describe do
   describe 'build_message' do
     context do
       subject {driver.instance.build_message(0, 50)}
-      it{should == "status #{driver.instance.host}.#{driver.instance.column} #{driver.instance.color} #{Time.at(0)} #{driver.instance.column} #{driver.instance.name_key}=50\n\n#{driver.instance.name_key}=50"}
+      it{should == "status #{driver.instance.hostname}.#{driver.instance.testname} #{driver.instance.color} #{Time.at(0)} #{driver.instance.testname} #{driver.instance.name_key}=50\n\n#{driver.instance.name_key}=50"}
     end
   end
   
