@@ -19,7 +19,12 @@ module Fluent
       super
 
       @custom_determine_color = nil
-      @custom_determine_color = lambda {|time, record, value| eval(@custom_determine_color_code)} if @custom_determine_color_code
+      begin
+        @custom_determine_color = eval("lambda {|time, record, value| #{@custom_determine_color_code}}") if @custom_determine_color_code
+      rescue Exception
+        raise Fluent::ConfigError, "custom_determine_color_code: #{$!.class}, '#{$!.message}'"
+      end
+        
     end
 
     def start
