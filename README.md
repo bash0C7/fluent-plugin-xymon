@@ -24,6 +24,7 @@ fluent-gem install fluent-plugin-xymon
 
 ### example
 
+````
 <store>
   type xymon
   xymon_server                127.0.0.1
@@ -34,6 +35,7 @@ fluent-gem install fluent-plugin-xymon
   name_key                    CPUUtilization
   custom_determine_color_code if value.to_i > 90; 'red'; else 'green'; end
 </store>
+````
 
 ## config_param :custom_determine_color_code
 
@@ -56,6 +58,7 @@ custom_determine_color_code return 'green'
 ````
 custom_determine_color_code if  value > 90; 'red'; else 'green'; end
 ````
+
 ### config_param :color
 
 ignore :color if custom_determine_color_code is exist and valid.
@@ -77,5 +80,6 @@ server didn't respond
 5. Create new Pull Request
 
 ## releases
-2013/08/09 0.0.0 1st release
-2013/08/10 0.0.1 https://github.com/bash0C7/fluent-plugin-xymon/pull/1
+
+- 2013/08/09 0.0.0 1st release
+- 2013/08/10 0.0.1 https://github.com/bash0C7/fluent-plugin-xymon/pull/1
