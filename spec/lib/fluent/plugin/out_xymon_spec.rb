@@ -1,92 +1,94 @@
 require 'spec_helper'
 
 describe do
-  let(:driver) {
-    Fluent::Test::OutputTestDriver.new(Fluent::XymonOutput, 'test.metrics').configure(config)
-  }
+  let(:driver) {Fluent::Test::OutputTestDriver.new(Fluent::XymonOutput, 'test.metrics').configure(config)}
+  let(:instance) {driver.instance}
 
-  let(:config) {
-    %[
+  describe 'config' do
+    let(:config) {
+      %[
       xymon_server 127.0.0.1
       xymon_port   1984
       color        red
       hostname     host1
       testname     column1
       name_key     field1
-    ]
-  }
-
-  describe 'config' do
+      ]
+    }
+    
     context do
-      subject {driver.instance.xymon_server}
+      subject {instance.xymon_server}
       it{should == '127.0.0.1'}
     end
 
     context do
-      subject {driver.instance.xymon_port}
+      subject {instance.xymon_port}
       it{should == '1984'}
     end
 
     context do
-      subject {driver.instance.color}
+      subject {instance.color}
       it{should == 'red'}
     end
 
     context do
-      subject {driver.instance.hostname}
+      subject {instance.hostname}
       it{should == 'host1'}
     end
 
     context do
-      subject {driver.instance.testname}
+      subject {instance.testname}
       it{should == 'column1'}
     end
 
     context do
-      subject {driver.instance.name_key}
+      subject {instance.name_key}
       it{should == 'field1'}
     end
 
     describe 'custom_determine_color_code' do
       context 'not_exist' do
-        subject {driver.instance.custom_determine_color_code}
+        let(:config) {
+          %[
+            xymon_server 127.0.0.1
+            xymon_port   1984
+            color        red
+            hostname     host1
+            testname     column1
+            name_key     field1
+          ]
+        }
+        
+        subject {instance.custom_determine_color_code}
         it{should be_nil}
       end
 
-      context 'valid syntax' do
+      context 'exist custom_determine_color_code' do
         let(:config) {
           %[
-            xymon_server 127.0.0.1
-            xymon_port   1984
-            color        red
-            hostname     host1
-            testname     column1
-            name_key     field1
-            custom_determine_color_code return 'green'
+          xymon_server 127.0.0.1
+          xymon_port   1984
+          color        red
+          hostname     host1
+          testname     column1
+          name_key     field1
+          custom_determine_color_code #{custom_determine_color_code}
           ]
         }
+        context 'valid syntax' do
+          let(:custom_determine_color_code) {"return 'green'"}
 
-        subject {driver.instance.custom_determine_color_code}
-        it{should == "return 'green'"}
+          subject {instance.custom_determine_color_code}
+          it{should == custom_determine_color_code}
+        end
+
+        context 'invalid syntax' do
+          let(:custom_determine_color_code) {"(><)"}
+
+          subject {lambda{instance.custom_determine_color_code}}
+          it{should raise_error(Fluent::ConfigError)}
+        end
       end
-
-      context 'invalid syntax' do
-        let(:config) {
-          %[
-            xymon_server 127.0.0.1
-            xymon_port   1984
-            color        red
-            hostname     host1
-            testname     column1
-            name_key     field1
-            custom_determine_color_code (><)
-          ]
-        }
-
-        subject {lambda{driver.instance.custom_determine_color_code}}
-        it{should raise_error(Fluent::ConfigError)}
-      end
-
     end
   end
 
@@ -97,10 +99,21 @@ describe do
     let(:time) {0}
     let(:value) {record[name_key]}
 
-    let(:built) {driver.instance.build_message(time, record, value)}
+    let(:built) {instance.build_message(time, record, value)}
     context 'empty custom_determine_color_code' do
+      let(:config) {
+        %[
+      xymon_server 127.0.0.1
+      xymon_port   1984
+      color        red
+      hostname     host1
+      testname     column1
+      name_key     field1
+        ]
+      }
+      
       subject {built}
-      it{should == "status #{driver.instance.hostname}.#{driver.instance.testname} #{driver.instance.color} #{Time.at(0)} #{driver.instance.testname} #{driver.instance.name_key}=50\n\n#{driver.instance.name_key}=50"}
+      it{should == "status #{instance.hostname}.#{instance.testname} #{instance.color} #{Time.at(0)} #{instance.testname} #{instance.name_key}=50\n\n#{instance.name_key}=50"}
     end
 
     context 'exist custom_determine_color_code' do
@@ -120,7 +133,7 @@ describe do
         let(:custom_determine_color_code) {"if value.to_i > 90; 'red'; else 'green'; end"}
 
         subject {built}
-        it{should == "status #{driver.instance.hostname}.#{driver.instance.testname} #{'green'} #{Time.at(time)} #{driver.instance.testname} #{driver.instance.name_key}=#{value}\n\n#{driver.instance.name_key}=#{value}"}
+        it{should == "status #{instance.hostname}.#{instance.testname} #{'green'} #{Time.at(time)} #{instance.testname} #{instance.name_key}=#{value}\n\n#{instance.name_key}=#{value}"}
       end
 
       context 'invalid syntax custom_determine_color_code' do
@@ -130,7 +143,7 @@ describe do
           mock($log).warn("raises exception: NameError, 'uninitialized constant #{custom_determine_color_code}', 'Fluent::XymonOutput::UNDEFINED_CONST', '#{time}', '#{record.to_s}', '#{record[name_key]}'").times 1
           built
         }
-        it{should == "status #{driver.instance.hostname}.#{driver.instance.testname} #{driver.instance.color} #{Time.at(time)} #{driver.instance.testname} #{driver.instance.name_key}=#{value}\n\n#{driver.instance.name_key}=#{value}"}
+        it{should == "status #{instance.hostname}.#{instance.testname} #{instance.color} #{Time.at(time)} #{instance.testname} #{instance.name_key}=#{value}\n\n#{instance.name_key}=#{value}"}
       end
     end
   end
@@ -146,12 +159,23 @@ describe do
     }
 
     context 'empty custom_determine_color_code' do
+      let(:config) {
+        %[
+          xymon_server 127.0.0.1
+          xymon_port   1984
+          color        red
+          hostname     host1
+          testname     column1
+          name_key     field1
+        ]
+      }
+
       subject {posted}
       it{should_not be_nil}
     end
 
     context 'exist custom_determine_color_code' do
-    let(:name_key) {'field1'}
+      let(:name_key) {'field1'}
       let(:config) {
         %[
           xymon_server 127.0.0.1
@@ -164,14 +188,14 @@ describe do
         ]
       }
 
-      context 'valid custom_determine_color_code' do
+      context 'valid code' do
         let(:custom_determine_color_code) {"if value.to_i > 90; 'red'; else 'green'; end"}
       
         subject {posted}
         it{should_not be_nil}
       end
 
-      context 'invalid syntax custom_determine_color_code' do
+      context 'runtime error' do
         let(:custom_determine_color_code) {'Fluent::XymonOutput::UNDEFINED_CONST'}
 
         subject {
